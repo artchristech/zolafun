@@ -361,8 +361,48 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => input.keys.delete(e.code));
 window.addEventListener("blur", () => input.keys.clear());
 
+// Gamepad (standard mapping, e.g. an Xbox controller): left stick or d-pad
+// walks, right stick looks, A interacts, A/Start begins, triggers zoom.
+const pad = { x: 0, y: 0, prev: [] };
+const dead = (x, y, d = 0.18) => {
+  const l = Math.hypot(x, y);
+  if (l < d) return [0, 0];
+  const k = (Math.min(1, l) - d) / (1 - d) / l;
+  return [x * k, y * k];
+};
+function pollGamepad(dt) {
+  pad.x = pad.y = 0;
+  const gp = [...(navigator.getGamepads?.() || [])].find((g) => g && g.connected);
+  if (!gp) return;
+  const b = (i) => !!gp.buttons[i]?.pressed;
+  const pressed = (i) => b(i) && !pad.prev[i];
+  const [mx, my] = dead(gp.axes[0] || 0, gp.axes[1] || 0);
+  pad.x = mx + (b(15) ? 1 : 0) - (b(14) ? 1 : 0);
+  pad.y = my + (b(13) ? 1 : 0) - (b(12) ? 1 : 0);
+  const [lx, ly] = dead(gp.axes[2] || 0, gp.axes[3] || 0);
+  if (lx || ly) {
+    cam.yaw -= lx * dt * 2.6;
+    cam.pitch = Math.min(1.15, Math.max(0.05, cam.pitch + ly * dt * 1.6));
+    cam.lastLook = clock;
+  }
+  const zoom = (gp.buttons[7]?.value || 0) - (gp.buttons[6]?.value || 0);
+  if (zoom) cam.dist = Math.min(18, Math.max(5, cam.dist + zoom * dt * 8));
+  if (pressed(0) || pressed(9)) {
+    const end = $("end");
+    if (!state.started) begin();
+    else if (!end.classList.contains("gone")) end.dispatchEvent(new Event("pointerdown"));
+    else if (pressed(0)) activate();
+  }
+  pad.prev = gp.buttons.map((x) => x.pressed);
+}
+// Browsers only unlock audio on a click, tap or key press; a controller button
+// doesn't count, so retry on the next such gesture if we began from the pad.
+for (const ev of ["pointerdown", "keydown"]) {
+  window.addEventListener(ev, () => sound.ctx?.state === "suspended" && sound.ctx.resume(), { capture: true });
+}
+
 function readMove() {
-  let x = input.x, y = input.y;
+  let x = input.x + pad.x, y = input.y + pad.y;
   const k = input.keys;
   if (k.has("KeyW") || k.has("ArrowUp")) y -= 1;
   if (k.has("KeyS") || k.has("ArrowDown")) y += 1;
@@ -773,6 +813,7 @@ function updateEnvironment(dt) {
 
 function update(dt) {
   clock += dt;
+  pollGamepad(dt);
   for (let i = timers.length - 1; i >= 0; i--) {
     if (timers[i].at <= clock) {
       const fn = timers[i].fn;

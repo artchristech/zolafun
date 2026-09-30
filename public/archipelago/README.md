@@ -11,6 +11,8 @@ MIT, see `THREE_LICENSE`) and all sound is synthesized with WebAudio.
 
 - **Touch:** drag on the left half to walk, drag on the right half to look,
   tap the glowing button to interact.
+- **Controller (Xbox or any standard gamepad):** left stick or d-pad to walk,
+  right stick to look, A to interact (A or Start to begin), triggers to zoom.
 - **Keyboard/mouse:** WASD or arrow keys to walk, drag to look, scroll to
   zoom, E, Space or Enter to interact.
 
