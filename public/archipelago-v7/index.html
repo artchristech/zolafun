@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five Lights</title>
+<style>
+  :root { --gold: #ffd27a; --ink: #0b1226; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1226; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #fff; user-select: none; -webkit-user-select: none; }
+  #c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+
+  /* ---- title ---- */
+  #title { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    padding-bottom: 11vh; background: linear-gradient(to bottom, rgba(10,14,30,0) 40%, rgba(10,14,30,0.55)); transition: opacity 1.6s ease; }
+  #title.gone { opacity: 0; pointer-events: none; }
+  #title h1 { margin: 0 0 18px; font-weight: normal; font-size: clamp(38px, 7vw, 86px); letter-spacing: 0.08em;
+    text-shadow: 0 2px 30px rgba(255, 170, 80, 0.55), 0 0 2px rgba(0,0,0,0.6); color: #fff6e4; }
+  .dots { display: flex; gap: 18px; margin-bottom: 34px; }
+  .dots i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.18); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.5); transition: all 0.6s; }
+  .dots i.on { background: var(--gold); box-shadow: 0 0 14px 4px rgba(255,190,90,0.8); }
+  #starters { display: flex; gap: 28px; align-items: center; opacity: 0.25; transition: opacity 0.8s; }
+  #title.ready #starters { opacity: 1; animation: breathe 2.6s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scale(1.06); } }
+  #restart { position: absolute; right: 34px; bottom: 34px; width: 64px; height: 64px; display: none; cursor: pointer; }
+  #restart.show { display: block; }
+  #restart .hold { position: absolute; left: 50%; top: 72px; transform: translateX(-50%); }
+  #restart-ring { transition: stroke-dashoffset 0.05s linear; }
+
+  /* ---- glyphs ---- */
+  .glyph svg { display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45)); }
+  body[data-device="pad"] .kb-only { display: none; }
+  body:not([data-device="pad"]) .pad-only { display: none; }
+
+  #prompt { position: fixed; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s; will-change: transform; }
+  #prompt.show { opacity: 1; }
+  #prompt svg { animation: bob 1.4s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
+
+  /* ---- closing moment ---- */
+  #closing { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(6,10,26,0.25), rgba(6,10,26,0.85)); opacity: 0; transition: opacity 2.5s ease; }
+  #closing.show { opacity: 1; }
+  #closing .dots { gap: 34px; margin-bottom: 40px; }
+  #closing .dots i { width: 22px; height: 22px; }
+  #ctime { font-size: clamp(34px, 5vw, 64px); letter-spacing: 0.12em; color: #fff3da; text-shadow: 0 0 24px rgba(255,180,90,0.6); font-variant-numeric: tabular-nums; }
+
+  #stats { position: fixed; left: 10px; top: 10px; font: 12px/1.35 ui-monospace, Menlo, Consolas, monospace; color: #e8f4ff; background: rgba(0,0,0,0.5);
+    padding: 6px 9px; border-radius: 4px; white-space: pre; display: none; pointer-events: none; }
+  #stats.show { display: block; }
+</style>
+</head>
+<body data-device="kbm">
+<canvas id="c" tabindex="0"></canvas>
+
+<div id="title">
+  <h1>Five Lights</h1>
+  <div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
+  <div id="starters">
+    <span class="glyph"><svg width="58" height="58" viewBox="0 0 58 58"><circle cx="29" cy="29" r="25" fill="#2f9e5a" stroke="#d9ffe6" stroke-width="2"/><text x="29" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="26" fill="#fff">A</text></svg></span>
+    <span class="glyph"><svg width="46" height="62" viewBox="0 0 46 62"><rect x="3" y="3" width="40" height="56" rx="20" fill="rgba(255,255,255,0.12)" stroke="#fff" stroke-width="2.5"/><path d="M23 3 V26 M3 26 H43" stroke="#fff" stroke-width="2"/><path d="M23 4.5 A19.5 19.5 0 0 0 4.5 24.5 H23 Z" fill="#ffd27a"/></svg></span>
+  </div>
+  <div id="restart">
+    <svg width="64" height="64" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="26" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+      <circle id="restart-ring" cx="32" cy="32" r="26" fill="none" stroke="#ffd27a" stroke-width="4" stroke-dasharray="163.36" stroke-dashoffset="163.36" transform="rotate(-90 32 32)"/>
+      <path d="M41 25 A11 11 0 1 0 43 33" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M36 23 L43 24 L41 17" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="hold glyph">
+      <svg class="kb-only" width="26" height="26" viewBox="0 0 26 26"><rect x="1.5" y="1.5" width="23" height="23" rx="5" fill="#f3efe6" stroke="#58524a" stroke-width="1.5"/><text x="13" y="18" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="13" fill="#2a2620">R</text></svg>
+      <svg class="pad-only" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.5" fill="#d9a521" stroke="#fff3c4" stroke-width="1.5"/><text x="13" y="18" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="13" fill="#fff">Y</text></svg>
+    </span>
+  </div>
+</div>
+
+<div id="prompt" class="glyph">
+  <svg class="kb-only" width="40" height="40" viewBox="0 0 40 40"><rect x="2" y="2" width="36" height="36" rx="7" fill="#f3efe6" stroke="#58524a" stroke-width="2"/><rect x="5" y="4" width="30" height="27" rx="5" fill="#fffdf7"/><text x="20" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="18" fill="#2a2620">E</text></svg>
+  <svg class="pad-only" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#2f9e5a" stroke="#d9ffe6" stroke-width="2"/><text x="20" y="26.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="18" fill="#fff">A</text></svg>
+</div>
+
+<div id="closing">
+  <div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
+  <div id="ctime">0:00</div>
+</div>
+
+<div id="stats"></div>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
