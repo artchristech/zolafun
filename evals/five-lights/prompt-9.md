@@ -88,10 +88,10 @@ Performance
 
 Also
 - Progress saves, so a reload continues exactly where the player left off,
-  half-finished puzzles included.
+  half-finished puzzles included. Holding a glyph on the title screen starts
+  over, with no words.
 - The world pauses, sun and tide included, when pointer lock is released or
-  the window loses focus; a wordless glyph resumes it. Holding a
-  glyph on the title screen starts over, with no words.
+  the window loses focus; a wordless glyph resumes it.
 - A key toggles a small readout of frame rate, triangles, draw calls and
   active lights, counting the shadow pass too, shown as icons and numerals
   with no words.
