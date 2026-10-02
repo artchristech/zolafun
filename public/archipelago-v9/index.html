@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five Lights</title>
+<style>
+  :root { --ink: #2a2420; --paper: #f4ecd8; --glow: #ffcf7a; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1020; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .layer { position: fixed; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+  .hidden { opacity: 0 !important; visibility: hidden; }
+  .fade { transition: opacity 0.8s ease, visibility 0.8s; }
+  #title { flex-direction: column; gap: 4vh; background: radial-gradient(ellipse at 50% 60%, rgba(0,0,0,0) 40%, rgba(10,8,20,0.45) 100%); pointer-events: auto; cursor: pointer; }
+  #logo { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(40px, 7vw, 96px); color: var(--paper); letter-spacing: 0.08em; text-shadow: 0 2px 18px rgba(255,180,90,0.55), 0 1px 0 #6a3a1a; margin-top: -10vh; }
+  .dots { display: flex; gap: 18px; justify-content: center; }
+  .dot { width: 16px; height: 16px; border-radius: 50%; background: #3a3440; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15); transition: background 0.6s, box-shadow 0.6s; }
+  .dot.on { background: var(--glow); box-shadow: 0 0 14px 4px rgba(255,190,90,0.8); }
+  #startRow { display: flex; gap: 28px; align-items: center; opacity: 0; transition: opacity 1s; }
+  #startRow.ready { opacity: 1; animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  .glyph svg { width: 64px; height: 64px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.45)); }
+  #spinner { width: 14px; height: 14px; border-radius: 50%; background: var(--glow); animation: breathe 1.2s ease-in-out infinite; box-shadow: 0 0 12px 3px rgba(255,190,90,0.7); }
+  #spinner.done { display: none; }
+  @keyframes breathe { 0%,100% { opacity: 0.25; } 50% { opacity: 1; } }
+  #reset { position: fixed; right: 28px; bottom: 26px; width: 74px; height: 74px; pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #reset svg.ring { width: 54px; height: 54px; }
+  #reset .badges { display: flex; gap: 6px; }
+  #reset .badges svg { width: 20px; height: 20px; }
+  #pause { background: rgba(8,10,24,0.45); pointer-events: auto; cursor: pointer; flex-direction: column; gap: 22px; }
+  #pause .row { display: flex; gap: 22px; align-items: center; }
+  #prompt { position: fixed; left: 0; top: 0; transform: translate(-50%, -50%); pointer-events: none; transition: opacity 0.2s; }
+  #prompt svg { width: 46px; height: 46px; animation: bob 1.4s ease-in-out infinite; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  #perf { position: fixed; left: 12px; top: 12px; padding: 8px 10px; border-radius: 8px; background: rgba(10,12,20,0.6); color: #e8e2d0; font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; pointer-events: none; }
+  #perf div { display: flex; align-items: center; gap: 8px; }
+  #perf svg { width: 15px; height: 15px; }
+  #closing { background: #05070f; flex-direction: column; gap: 5vh; transition: opacity 1.6s ease, visibility 1.6s; }
+  #closing .dot { width: 22px; height: 22px; }
+  #closing .time { font-family: Georgia, serif; font-size: clamp(28px, 4vw, 52px); color: var(--paper); letter-spacing: 0.12em; text-shadow: 0 0 16px rgba(255,190,90,0.6); }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="title" class="layer fade">
+  <div id="logo">Five Lights</div>
+  <div class="dots" id="titleDots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <div id="spinner"></div>
+  <div id="startRow">
+    <span class="glyph" data-g="padA"></span>
+    <span class="glyph" data-g="click"></span>
+  </div>
+</div>
+<div id="reset" class="fade">
+  <svg class="ring" viewBox="0 0 54 54">
+    <circle cx="27" cy="27" r="24" fill="rgba(20,16,24,0.55)" stroke="rgba(244,236,216,0.35)" stroke-width="3"/>
+    <circle id="resetArc" cx="27" cy="27" r="24" fill="none" stroke="#ffcf7a" stroke-width="4" stroke-dasharray="150.8" stroke-dashoffset="150.8" transform="rotate(-90 27 27)" stroke-linecap="round"/>
+    <path d="M18 27a9 9 0 1 0 3-6.7" fill="none" stroke="#f4ecd8" stroke-width="3" stroke-linecap="round"/>
+    <path d="M16 15l5 6-7 1z" fill="#f4ecd8"/>
+  </svg>
+  <div class="badges"><span class="glyph" data-g="keyR"></span><span class="glyph" data-g="padY"></span></div>
+</div>
+<div id="pause" class="layer fade hidden">
+  <div class="glyph" data-g="play"></div>
+  <div class="row"><span class="glyph" data-g="padA"></span><span class="glyph" data-g="click"></span></div>
+</div>
+<div id="prompt" class="hidden"><span class="glyph" id="promptGlyph" data-g="keyE"></span></div>
+<div id="perf" class="hidden"></div>
+<div id="closing" class="layer hidden">
+  <div class="dots" id="closeDots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="time" id="closeTime">00:00</div>
+</div>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>

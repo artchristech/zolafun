@@ -17,4 +17,5 @@ figures are rough estimates.
 | Prompt 6 | Output 6: `public/archipelago-v6/`, [play](https://claude.ai/artifact/4GAzyF8rgnP6K2FYSjj9jn) | Keyboard/mouse + controller | 53 min | 251k (harness count) | 49 | 3,532 | 9 | 8.5/10 |
 | Prompt 7 | Output 7: `public/archipelago-v7/`, [play](https://claude.ai/artifact/6xkghBhpa5rYqZooxBeDJx) | Keyboard/mouse + controller | 47 min | 348k (harness count) | 51 | 5,091 | 10 | 9/10 |
 | Prompt 8 | Output 8: `public/archipelago-v8/`, [play](https://claude.ai/artifact/Wcoqi81xiXRq6ZHRW1wkmH) | Keyboard/mouse + controller | 63 min | 441k (harness count) | 79 | 4,591 | 12 | 9/10 |
-| Prompt 9 | Output 9: `public/archipelago-v9/` | Keyboard/mouse + controller | ?? | ?? | ?? | ?? | ?? | ?? |
+| Prompt 9 | Output 9: `public/archipelago-v9/`, [play](https://claude.ai/artifact/6WUZ7WQhMueEPmDdiAzuAG) | Keyboard/mouse + controller | 44 min | 344k (harness count) | 70 | 4,150 | 15 | 9/10 |
+| Prompt 10 | Output 10: `public/archipelago-v10/` | Keyboard/mouse + controller | ?? | ?? | ?? | ?? | ?? | ?? |
